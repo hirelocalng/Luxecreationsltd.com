@@ -5,15 +5,18 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 
-// ── Security & Logging ──────────────────────────────────────────────────────
+// ── 1. Static files FIRST — no auth, no rate-limit, no CORS interference ─────
+const DIST = path.join(__dirname, '../../dist');
+app.use(express.static(DIST));
+
+// ── 2. Security & Logging ─────────────────────────────────────────────────────
 app.use(helmet());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-// ── CORS ─────────────────────────────────────────────────────────────────────
+// ── 3. CORS ───────────────────────────────────────────────────────────────────
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5174')
   .split(',')
   .map((s) => s.trim());
@@ -28,12 +31,13 @@ app.use(
   })
 );
 
-// ── Body parsing ─────────────────────────────────────────────────────────────
+// ── 4. Body parsing ───────────────────────────────────────────────────────────
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
-// ── Global rate limit (all endpoints) ────────────────────────────────────────
+// ── 5. Global rate limit (API only) ──────────────────────────────────────────
 app.use(
+  '/api',
   rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 200,
@@ -43,7 +47,7 @@ app.use(
   })
 );
 
-// ── Routes ───────────────────────────────────────────────────────────────────
+// ── 6. API routes ─────────────────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/inquiries', require('./routes/inquiries'));
 app.use('/api/blog', require('./routes/blog'));
@@ -53,23 +57,14 @@ app.use('/api/portfolio', require('./routes/portfolio'));
 app.use('/api/newsletter', require('./routes/newsletter'));
 app.use('/api/seo', require('./routes/seo'));
 
-// ── Health check ─────────────────────────────────────────────────────────────
+// ── 7. Health check ───────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── Static frontend (production) ──────────────────────────────────────────────
-const DIST = path.join(__dirname, '../../dist');
-if (process.env.NODE_ENV === 'production' && fs.existsSync(DIST)) {
-  app.use(express.static(DIST));
-  app.get('*splat', (req, res) => {
-    res.sendFile(path.join(DIST, 'index.html'));
-  });
-}
-
-// ── 404 (API-only / dev) ──────────────────────────────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({ error: `Route not found: ${req.method} ${req.path}` });
+// ── 8. Catch-all — serve React app for all non-API, non-asset routes ─────────
+app.get('*splat', (req, res) => {
+  res.sendFile(path.join(DIST, 'index.html'));
 });
 
 // ── Error handler ─────────────────────────────────────────────────────────────
