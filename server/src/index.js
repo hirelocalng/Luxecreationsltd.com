@@ -4,6 +4,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 
@@ -56,7 +58,16 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── 404 ──────────────────────────────────────────────────────────────────────
+// ── Static frontend (production) ──────────────────────────────────────────────
+const DIST = path.join(__dirname, '../../dist');
+if (process.env.NODE_ENV === 'production' && fs.existsSync(DIST)) {
+  app.use(express.static(DIST));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(DIST, 'index.html'));
+  });
+}
+
+// ── 404 (API-only / dev) ──────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: `Route not found: ${req.method} ${req.path}` });
 });

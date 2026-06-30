@@ -4,6 +4,7 @@ import EventsPage from './pages/EventsPage';
 import ConfectioneriesPage from './pages/ConfectioneriesPage';
 import DesignsPage from './pages/DesignsPage';
 import BookPage from './pages/BookPage';
+import AdminRoot from './admin/AdminRoot';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/confectioneries" element={<ConfectioneriesPage />} />
         <Route path="/designs" element={<DesignsPage />} />
         <Route path="/book" element={<BookPage />} />
+        <Route path="/admin/*" element={<AdminRoot />} />
       </Routes>
     </BrowserRouter>
   );

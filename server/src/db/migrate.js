@@ -103,6 +103,47 @@ INSERT INTO seo_settings (page_key, meta_title, meta_description) VALUES
   ('portfolio',      'Portfolio — Luxe Creations Ltd', 'Browse our portfolio of luxury events, bespoke cakes, and brand identity projects.'),
   ('blog',           'Blog — Luxe Creations Ltd', 'Tips, inspiration, and behind-the-scenes from Luxe Creations Ltd.')
 ON CONFLICT (page_key) DO NOTHING;
+
+-- Seed services per division (only if table is empty)
+INSERT INTO services (division, title, sort_order, active)
+SELECT * FROM (VALUES
+  ('events', 'Wedding & Reception Planning', 1, true),
+  ('events', 'Traditional Marriage Ceremony', 2, true),
+  ('events', 'Corporate Events & Conferences', 3, true),
+  ('events', 'Birthday & Anniversary Celebrations', 4, true),
+  ('events', 'Naming & Thanksgiving Ceremonies', 5, true),
+  ('events', 'Bridal Showers & Bachelor Parties', 6, true),
+  ('events', 'Venue Sourcing & Decoration', 7, true),
+  ('events', 'Catering & Vendor Coordination', 8, true),
+  ('events', 'Event Photography & Videography Liaison', 9, true),
+  ('events', 'Full Day-of Coordination', 10, true),
+  ('confectioneries', 'Custom Wedding Cakes', 1, true),
+  ('confectioneries', 'Birthday & Celebration Cakes', 2, true),
+  ('confectioneries', 'Cupcakes & Mini Cakes', 3, true),
+  ('confectioneries', 'Dessert Tables & Candy Buffets', 4, true),
+  ('confectioneries', 'Fondant & Sculpted Cakes', 5, true),
+  ('confectioneries', 'Corporate Branded Cakes', 6, true),
+  ('confectioneries', 'Pastries & Small Chops', 7, true),
+  ('confectioneries', 'Cake Tasting Consultations', 8, true),
+  ('designs', 'Brand Identity & Logo Design', 1, true),
+  ('designs', 'Color Palette & Typography Systems', 2, true),
+  ('designs', 'Stationery & Print Design', 3, true),
+  ('designs', 'Event Branding & Signage', 4, true),
+  ('designs', 'Social Media Graphics & Templates', 5, true),
+  ('designs', 'Marketing Collateral & Flyers', 6, true),
+  ('designs', 'Packaging Design', 7, true),
+  ('designs', 'Brand Guidelines & Style Guides', 8, true)
+) AS v(division, title, sort_order, active)
+WHERE NOT EXISTS (SELECT 1 FROM services LIMIT 1);
+
+-- Seed sample testimonials (only if table is empty)
+INSERT INTO testimonials (name, role, division, quote, rating, sort_order, published)
+SELECT * FROM (VALUES
+  ('Adaeze Okonkwo', 'Bride, Enugu 2024', 'events', 'Luxe Creations transformed our wedding into a dream. Every detail was perfection — from the breathtaking decor to the seamless coordination. Our guests are still talking about it.', 5, 1, true),
+  ('Chidi & Ngozi Eze', 'Anniversary Couple, Onitsha', 'confectioneries', 'The five-tier cake was nothing short of a masterpiece. It tasted as incredible as it looked. Luxe Confectioneries has ruined us for any other bakery forever.', 5, 2, true),
+  ('Emeka Obi', 'CEO, Obi Holdings', 'designs', 'Our rebrand with Luxe Designs elevated our entire company image. The logo, colour palette, and brand materials they delivered were world-class. Our clients noticed immediately.', 5, 3, true)
+) AS v(name, role, division, quote, rating, sort_order, published)
+WHERE NOT EXISTS (SELECT 1 FROM testimonials LIMIT 1);
 `;
 
 async function migrate() {
