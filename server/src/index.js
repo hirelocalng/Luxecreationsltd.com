@@ -62,7 +62,7 @@ app.get('/health', (req, res) => {
 const DIST = path.join(__dirname, '../../dist');
 if (process.env.NODE_ENV === 'production' && fs.existsSync(DIST)) {
   app.use(express.static(DIST));
-  app.get('*', (req, res) => {
+  app.get('*splat', (req, res) => {
     res.sendFile(path.join(DIST, 'index.html'));
   });
 }
