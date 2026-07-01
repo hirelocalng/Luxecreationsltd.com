@@ -3,7 +3,6 @@ import Hero from '../components/Hero';
 import RibbonDivider from '../components/RibbonDivider';
 import WhyChooseUs from '../components/WhyChooseUs';
 import ServiceCards from '../components/ServiceCards';
-import PortfolioHighlights from '../components/PortfolioHighlights';
 import TestimonialsCarousel from '../components/TestimonialsCarousel';
 import Process from '../components/Process';
 import HomeCTA from '../components/HomeCTA';
@@ -26,7 +25,6 @@ export default function HomePage() {
         <Hero />
         <WhyChooseUs />
         <ServiceCards />
-        <PortfolioHighlights />
         <TestimonialsCarousel />
         <Process />
         <HomeCTA />

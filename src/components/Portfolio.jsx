@@ -8,11 +8,11 @@ const FILTERS = ['All', 'Events', 'Confectioneries', 'Branding & Design'];
 
 // Normalize lowercase API category → display label
 const CAT_MAP = {
-  events:           'Events',
-  confectioneries:  'Confectioneries',
-  designs:          'Branding & Design',
+  events:              'Events',
+  confectioneries:     'Confectioneries',
+  designs:             'Branding & Design',
   'branding & design': 'Branding & Design',
-  other:            'Events', // fallback grouping
+  other:               'Events',
 };
 
 function normalizeCategory(cat) {
@@ -20,14 +20,13 @@ function normalizeCategory(cat) {
   return CAT_MAP[cat.toLowerCase()] ?? cat;
 }
 
-// Accent colour per display category
 const ACCENT = {
-  'Events':           '#D9A521',
-  'Confectioneries':  '#C97B5E',
-  'Branding & Design':'#D9A521',
+  'Events':            '#D9A521',
+  'Confectioneries':   '#C97B5E',
+  'Branding & Design': '#D9A521',
 };
 
-// Gradient fallback shown when no image_url is set
+// Gradient placeholder shown only when an item truly has no image_url
 const GRADIENTS = {
   'Events': [
     'linear-gradient(135deg, #1a4033 0%, #2d6a4f 100%)',
@@ -54,22 +53,6 @@ function gradientFor(displayCategory, index) {
   return pool[index % pool.length];
 }
 
-// Fallback shown while API loads or when backend is unreachable
-const FALLBACK_ITEMS = [
-  { id: 'f1',  title: 'Royal Garden Wedding Reception',      category: 'Events' },
-  { id: 'f2',  title: 'Artisan Five-Tier Wedding Cake',      category: 'Confectioneries' },
-  { id: 'f3',  title: 'Zenith Capital — Brand Identity',     category: 'Branding & Design' },
-  { id: 'f4',  title: 'Corporate Gala — 300 Guests',         category: 'Events' },
-  { id: 'f5',  title: 'Rose Gold Birthday Celebration Cake', category: 'Confectioneries' },
-  { id: 'f6',  title: 'Lumina Boutique — Visual Identity',   category: 'Branding & Design' },
-  { id: 'f7',  title: 'Luxury Baby Shower — Ivory & Gold',   category: 'Events' },
-  { id: 'f8',  title: 'Dessert Table — 80-Piece Collection', category: 'Confectioneries' },
-  { id: 'f9',  title: 'Nkemjika Foods — Packaging Design',   category: 'Branding & Design' },
-  { id: 'f10', title: 'Product Launch — 500 Attendees',      category: 'Events' },
-  { id: 'f11', title: 'Bridal Shower Cake & Cupcakes',       category: 'Confectioneries' },
-  { id: 'f12', title: 'Solace Wellness — Brand System',      category: 'Branding & Design' },
-];
-
 function PortfolioCard({ item, index }) {
   const displayCat = normalizeCategory(item.category);
   const accent     = ACCENT[displayCat] ?? '#D9A521';
@@ -89,7 +72,6 @@ function PortfolioCard({ item, index }) {
         cursor: 'pointer',
       }}
     >
-      {/* Uploaded image */}
       {hasImage && (
         <img
           src={item.image_url}
@@ -107,15 +89,13 @@ function PortfolioCard({ item, index }) {
         />
       )}
 
-      {/* Dot pattern (placeholder-only cards) */}
       {!hasImage && (
         <div
           aria-hidden="true"
           style={{
             position: 'absolute',
             inset: 0,
-            backgroundImage:
-              'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)',
+            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)',
             backgroundSize: '18px 18px',
           }}
         />
@@ -133,28 +113,24 @@ function PortfolioCard({ item, index }) {
           background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)',
         }}
       >
-        <span
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: 10,
-            fontWeight: 600,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: accent,
-            marginBottom: 5,
-          }}
-        >
+        <span style={{
+          fontFamily: 'var(--font-body)',
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: accent,
+          marginBottom: 5,
+        }}>
           {displayCat}
         </span>
-        <span
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 17,
-            fontWeight: 600,
-            color: '#F7F3E8',
-            lineHeight: 1.3,
-          }}
-        >
+        <span style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 17,
+          fontWeight: 600,
+          color: '#F7F3E8',
+          lineHeight: 1.3,
+        }}>
           {item.title}
         </span>
       </div>
@@ -171,19 +147,17 @@ function PortfolioCard({ item, index }) {
           justifyContent: 'center',
         }}
       >
-        <span
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: 12,
-            fontWeight: 600,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: '#D9A521',
-            border: '1px solid #D9A521',
-            padding: '10px 20px',
-            borderRadius: 2,
-          }}
-        >
+        <span style={{
+          fontFamily: 'var(--font-body)',
+          fontSize: 12,
+          fontWeight: 600,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: '#D9A521',
+          border: '1px solid #D9A521',
+          padding: '10px 20px',
+          borderRadius: 2,
+        }}>
           View Project
         </span>
       </div>
@@ -207,14 +181,16 @@ function SkeletonCard() {
   );
 }
 
+// preview=true  → homepage teaser: max 3 items, no filter pills, "View Full Portfolio" CTA
+// preview=false → /portfolio page: all items, full filter pills
 export default function Portfolio({ preview = false }) {
   const [active, setActive] = useState('All');
   const ref     = useScrollReveal();
   const gridRef = useRef(null);
 
-  const { items, loading } = useFetch(api.getPortfolio, FALLBACK_ITEMS);
+  // No fallback data — show only what the API returns
+  const { items, loading } = useFetch(api.getPortfolio, []);
 
-  // Normalize categories on incoming API items so filter/display works correctly
   const normalizedItems = items.map(item => ({
     ...item,
     _displayCategory: normalizeCategory(item.category),
@@ -225,8 +201,7 @@ export default function Portfolio({ preview = false }) {
       ? normalizedItems
       : normalizedItems.filter(i => i._displayCategory === active);
 
-  // In preview mode show at most 6 items, no filter pills
-  const displayed = preview ? filtered.slice(0, 6) : filtered;
+  const displayed = preview ? filtered.slice(0, 3) : filtered;
 
   useEffect(() => {
     const grid = gridRef.current;
@@ -248,6 +223,8 @@ export default function Portfolio({ preview = false }) {
     return () => clearTimeout(timer);
   }, [active, items, loading]);
 
+  const isEmpty = !loading && filtered.length === 0;
+
   return (
     <>
       <style>{`
@@ -264,41 +241,37 @@ export default function Portfolio({ preview = false }) {
         style={{ background: '#F7F3E8', padding: '96px 24px' }}
       >
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <p
-              className="reveal"
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: '0.3em',
-                textTransform: 'uppercase',
-                color: '#D9A521',
-                marginBottom: 12,
-              }}
-            >
+            <p className="reveal" style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: '0.3em',
+              textTransform: 'uppercase',
+              color: '#D9A521',
+              marginBottom: 12,
+            }}>
               Our Portfolio
             </p>
-            <h2
-              className="reveal reveal-delay-1"
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(28px, 4vw, 46px)',
-                fontWeight: 600,
-                color: '#0B2B22',
-                margin: '0 0 40px',
-                letterSpacing: '-0.02em',
-              }}
-            >
+            <h2 className="reveal reveal-delay-1" style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(28px, 4vw, 46px)',
+              fontWeight: 600,
+              color: '#0B2B22',
+              margin: preview ? '0' : '0 0 40px',
+              letterSpacing: '-0.02em',
+            }}>
               Stories We've Helped Tell
             </h2>
 
+            {/* Filter pills — full page only */}
             {!preview && (
               <div
                 role="tablist"
                 aria-label="Filter portfolio by category"
                 className="reveal reveal-delay-2"
-                style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}
+                style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 40 }}
               >
                 {FILTERS.map((f) => (
                   <button
@@ -327,36 +300,41 @@ export default function Portfolio({ preview = false }) {
             )}
           </div>
 
-          <div
-            ref={gridRef}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: 18,
-            }}
-          >
-            {loading
-              ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
-              : displayed.map((item, i) => (
-                  <PortfolioCard key={item.id ?? item.title} item={item} index={i} />
-                ))}
-          </div>
-
-          {!loading && filtered.length === 0 && (
-            <p
-              style={{
-                textAlign: 'center',
+          {/* Grid */}
+          {isEmpty ? (
+            <div style={{ textAlign: 'center', padding: '48px 24px' }}>
+              <p style={{
                 fontFamily: 'var(--font-body)',
-                fontSize: 15,
+                fontSize: 16,
+                lineHeight: 1.7,
                 color: 'rgba(11,43,34,0.5)',
-                marginTop: 48,
+                margin: '0 0 8px',
+              }}>
+                {preview
+                  ? 'Portfolio coming soon — follow us on Instagram for our latest work.'
+                  : active === 'All'
+                    ? 'No portfolio items yet — check back soon.'
+                    : `No ${active.toLowerCase()} items yet.`}
+              </p>
+            </div>
+          ) : (
+            <div
+              ref={gridRef}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: 18,
               }}
             >
-              No portfolio items in this category yet.
-            </p>
+              {loading
+                ? Array.from({ length: preview ? 3 : 6 }).map((_, i) => <SkeletonCard key={i} />)
+                : displayed.map((item, i) => (
+                    <PortfolioCard key={item.id ?? item.title} item={item} index={i} />
+                  ))}
+            </div>
           )}
 
-          {/* View Full Portfolio CTA — shown only in preview mode */}
+          {/* View Full Portfolio CTA — preview mode only */}
           {preview && !loading && (
             <div style={{ textAlign: 'center', marginTop: 52 }}>
               <Link
