@@ -1,4 +1,6 @@
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Empty string = same-origin relative paths (works on Railway where API and frontend share a domain).
+// Set VITE_API_URL only when the API is on a different domain.
+const BASE = import.meta.env.VITE_API_URL || '';
 
 function getToken() {
   return localStorage.getItem('admin_token');

@@ -1,176 +1,119 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { adminApi } from '../lib/api';
-import { useToast } from '../context/ToastContext';
-import {
-  PageHeader, LoadingRows, EmptyState, Modal, FormField, Card,
-  Badge, btnPrimary, btnGold, btnDanger, btnEdit, btnGhost, inputStyle, selectStyle,
-} from '../components/ui';
 
-// Backend columns: division, title, description, sort_order, active
-const DIVISIONS = ['events', 'confectioneries', 'designs'];
-const DIV_LABELS = { events: 'Luxe Events', confectioneries: 'Luxe Confectioneries', designs: 'Luxe Designs' };
-const BLANK = { title: '', description: '', division: 'events', active: true, sort_order: 0 };
+const G = '#0B2B22', GOLD = '#D9A521';
+const DIVS = ['events', 'confectioneries', 'designs'];
+const DIV_LABEL = { events: 'Luxe Events', confectioneries: 'Luxe Confectioneries', designs: 'Luxe Designs' };
+const inp = { width: '100%', padding: '9px 12px', border: '1.5px solid #d1d5db', borderRadius: 4, fontSize: 13, fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' };
+const btn = (bg, color, extra = {}) => ({ padding: '7px 14px', background: bg, color, border: 'none', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif', ...extra });
 
 export default function Services() {
-  const { toast } = useToast();
-  const [items, setItems] = useState([]);
+  const [items, setItems]     = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null);
-  const [activeDivision, setActiveDivision] = useState('events');
+  const [error, setError]     = useState('');
+  const [tab, setTab]         = useState('events');
+  const [editing, setEditing] = useState(null); // item being edited
+  const [adding, setAdding]   = useState(false);
+  const [newTitle, setNewTitle] = useState('');
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await adminApi.getServices();
-      setItems(res.data || []);
-    } catch {
-      toast('Failed to load services', 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
+  async function load() {
+    setLoading(true); setError('');
+    try { const r = await adminApi.getServices(); setItems(r.data || []); }
+    catch (e) { setError(e.message || 'Failed to load services'); }
+    finally { setLoading(false); }
+  }
+  useEffect(() => { load(); }, []);
 
-  useEffect(() => { load(); }, [load]);
+  async function saveEdit(item) {
+    try { await adminApi.updateService(item.id, { title: item.title, description: item.description, active: item.active }); setEditing(null); load(); }
+    catch (e) { alert(e.message); }
+  }
 
-  async function save(form) {
-    try {
-      if (form.id) {
-        await adminApi.updateService(form.id, form);
-        toast('Service updated');
-      } else {
-        await adminApi.createService(form);
-        toast('Service added');
-      }
-      setModal(null);
-      load();
-    } catch {
-      toast('Save failed', 'error');
-    }
+  async function addService() {
+    if (!newTitle.trim()) return;
+    try { await adminApi.createService({ division: tab, title: newTitle.trim(), sort_order: items.filter(x => x.division === tab).length, active: true }); setNewTitle(''); setAdding(false); load(); }
+    catch (e) { alert(e.message); }
   }
 
   async function del(id) {
     if (!confirm('Delete this service?')) return;
-    try {
-      await adminApi.deleteService(id);
-      toast('Deleted');
-      load();
-    } catch {
-      toast('Delete failed', 'error');
-    }
+    try { await adminApi.deleteService(id); load(); }
+    catch (e) { alert(e.message); }
   }
 
-  const divided = DIVISIONS.reduce((acc, d) => {
-    acc[d] = items.filter(s => s.division === d);
-    return acc;
-  }, {});
-
-  const visible = divided[activeDivision] || [];
+  const visible = items.filter(x => x.division === tab);
 
   return (
-    <div>
-      <PageHeader title="Services" count={items.length}>
-        <button onClick={() => setModal({ ...BLANK, division: activeDivision })} style={btnGold}>+ Add Service</button>
-      </PageHeader>
+    <div style={{ fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 600, color: '#111827', margin: 0 }}>Services</h1>
+        <button onClick={() => { setAdding(true); setNewTitle(''); }} style={btn(GOLD, G)}>+ Add Service</button>
+      </div>
 
-      <div style={{ display: 'flex', gap: 0, marginBottom: 24, borderBottom: '2px solid #e8e5df' }}>
-        {DIVISIONS.map(d => (
-          <button
-            key={d}
-            onClick={() => setActiveDivision(d)}
-            style={{
-              padding: '10px 20px', border: 'none', background: 'none', cursor: 'pointer',
-              fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 600,
-              color: activeDivision === d ? '#0B2B22' : '#9ca3af',
-              borderBottom: activeDivision === d ? '2px solid #0B2B22' : '2px solid transparent',
-              marginBottom: -2,
-              transition: 'color 0.15s',
-            }}
-          >
-            {DIV_LABELS[d]} ({divided[d].length})
+      {/* Tabs */}
+      <div style={{ display: 'flex', borderBottom: '2px solid #e8e5df', marginBottom: 24 }}>
+        {DIVS.map(d => (
+          <button key={d} onClick={() => setTab(d)} style={{ padding: '10px 20px', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 600, color: tab === d ? G : '#9ca3af', borderBottom: tab === d ? `2px solid ${G}` : '2px solid transparent', marginBottom: -2, transition: 'color 0.15s' }}>
+            {DIV_LABEL[d]} ({items.filter(x => x.division === d).length})
           </button>
         ))}
       </div>
 
-      {loading ? <LoadingRows n={4} /> : visible.length === 0 ? (
-        <EmptyState
-          message={`No services for ${DIV_LABELS[activeDivision]} yet.`}
-          onAction={() => setModal({ ...BLANK, division: activeDivision })}
-          actionLabel="Add First Service"
-        />
+      {error && <div style={{ background: '#fee2e2', color: '#991b1b', padding: '12px 16px', borderRadius: 6, marginBottom: 16, fontSize: 14 }}>{error}</div>}
+
+      {loading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[...Array(5)].map((_, i) => <div key={i} style={{ height: 52, background: '#e8e5df', borderRadius: 6, opacity: 0.6 }} />)}
+        </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {visible.length === 0 && !adding && (
+            <div style={{ textAlign: 'center', padding: '40px 20px', background: '#fff', border: '1px solid #e8e5df', borderRadius: 8 }}>
+              <p style={{ color: '#9ca3af', fontSize: 15, margin: 0 }}>No services for {DIV_LABEL[tab]} yet.</p>
+            </div>
+          )}
+
           {visible.map(item => (
-            <Card key={item.id} style={{ padding: '14px 20px', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 600, fontSize: 14, color: '#111827', fontFamily: 'Inter, sans-serif' }}>{item.title}</span>
-                  {!item.active && <Badge label="Hidden" bg="#f3f4f6" color="#6b7280" />}
+            <div key={item.id} style={{ background: '#fff', border: '1px solid #e8e5df', borderRadius: 8, padding: '14px 18px' }}>
+              {editing?.id === item.id ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <input value={editing.title} onChange={e => setEditing(x => ({ ...x, title: e.target.value }))} style={inp} placeholder="Service title" />
+                  <textarea value={editing.description || ''} onChange={e => setEditing(x => ({ ...x, description: e.target.value }))} rows={2} style={{ ...inp, resize: 'vertical' }} placeholder="Description (optional)" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#374151', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={editing.active} onChange={e => setEditing(x => ({ ...x, active: e.target.checked })) } /> Active
+                    </label>
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                      <button onClick={() => setEditing(null)} style={btn('#f3f4f6', '#374151')}>Cancel</button>
+                      <button onClick={() => saveEdit(editing)} style={btn(G, '#fff')}>Save</button>
+                    </div>
+                  </div>
                 </div>
-                {item.description && (
-                  <p style={{ fontSize: 13, color: '#6b7280', fontFamily: 'Inter, sans-serif', margin: 0, lineHeight: 1.5 }}>{item.description}</p>
-                )}
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                <button onClick={() => setModal(item)} style={btnEdit}>Edit</button>
-                <button onClick={() => del(item.id)} style={btnDanger}>Del</button>
-              </div>
-            </Card>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: item.active ? '#111827' : '#9ca3af', margin: 0, fontFamily: 'Inter, sans-serif' }}>{item.title}</p>
+                    {item.description && <p style={{ fontSize: 13, color: '#6b7280', margin: '2px 0 0', fontFamily: 'Inter, sans-serif' }}>{item.description}</p>}
+                  </div>
+                  {!item.active && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: '#f3f4f6', color: '#9ca3af', fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>Hidden</span>}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => setEditing({ ...item })} style={btn(G, '#fff', { fontSize: 11 })}>Edit</button>
+                    <button onClick={() => del(item.id)} style={btn('#fee2e2', '#991b1b', { fontSize: 11 })}>Del</button>
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
+
+          {adding && (
+            <div style={{ background: '#fff', border: `2px solid ${GOLD}`, borderRadius: 8, padding: '14px 18px', display: 'flex', gap: 10 }}>
+              <input value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addService()} style={{ ...inp }} placeholder={`New ${DIV_LABEL[tab]} service title…`} autoFocus />
+              <button onClick={addService} style={btn(G, '#fff')}>Add</button>
+              <button onClick={() => setAdding(false)} style={btn('#f3f4f6', '#374151')}>Cancel</button>
+            </div>
+          )}
         </div>
       )}
-
-      {modal && (
-        <ServiceModal initial={modal} onSave={save} onClose={() => setModal(null)} />
-      )}
     </div>
-  );
-}
-
-function ServiceModal({ initial, onSave, onClose }) {
-  const [form, setForm] = useState({
-    id:          initial.id,
-    division:    initial.division || 'events',
-    title:       initial.title || '',
-    description: initial.description || '',
-    sort_order:  initial.sort_order || 0,
-    active:      initial.active !== undefined ? initial.active : true,
-  });
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-  return (
-    <Modal title={form.id ? 'Edit Service' : 'Add Service'} onClose={onClose}>
-      <FormField label="Division">
-        <select value={form.division} onChange={e => set('division', e.target.value)} style={{ ...selectStyle, width: '100%' }}>
-          {DIVISIONS.map(d => <option key={d} value={d}>{DIV_LABELS[d]}</option>)}
-        </select>
-      </FormField>
-      <FormField label="Service Title *">
-        <input value={form.title} onChange={e => set('title', e.target.value)} style={inputStyle} placeholder="e.g. Wedding & Reception Planning" />
-      </FormField>
-      <FormField label="Description">
-        <textarea
-          value={form.description}
-          onChange={e => set('description', e.target.value)}
-          rows={3}
-          style={{ ...inputStyle, resize: 'vertical', fontFamily: 'Inter, sans-serif' }}
-          placeholder="Brief description of this service…"
-        />
-      </FormField>
-      <FormField label="Sort Order">
-        <input type="number" value={form.sort_order} onChange={e => set('sort_order', Number(e.target.value))} style={{ ...inputStyle, width: 100 }} min={0} />
-      </FormField>
-      <FormField label="Visibility">
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#374151' }}>
-          <input type="checkbox" checked={form.active} onChange={e => set('active', e.target.checked)} />
-          Visible on website
-        </label>
-      </FormField>
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-        <button onClick={onClose} style={btnGhost}>Cancel</button>
-        <button onClick={() => { if (!form.title) return; onSave(form); }} style={btnPrimary}>
-          {form.id ? 'Update' : 'Add'}
-        </button>
-      </div>
-    </Modal>
   );
 }

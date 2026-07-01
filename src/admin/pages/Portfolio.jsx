@@ -1,100 +1,91 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { adminApi } from '../lib/api';
-import { useToast } from '../context/ToastContext';
-import {
-  PageHeader, LoadingRows, EmptyState, Modal, FormField,
-  Badge, btnPrimary, btnGold, btnDanger, btnEdit, btnGhost, inputStyle, selectStyle,
-} from '../components/ui';
 
-const CATEGORIES = ['events', 'confectioneries', 'designs', 'other'];
+const G = '#0B2B22', GOLD = '#D9A521';
+const btn = (bg, color, extra = {}) => ({ padding: '7px 14px', background: bg, color, border: 'none', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif', ...extra });
+const inp = { width: '100%', padding: '9px 12px', border: '1.5px solid #d1d5db', borderRadius: 4, fontSize: 13, fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' };
+
+const CATS = ['events', 'confectioneries', 'designs', 'other'];
 
 export default function Portfolio() {
-  const { toast } = useToast();
-  const [items, setItems] = useState([]);
+  const [items, setItems]     = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null); // null | 'add' | item
+  const [error, setError]     = useState('');
+  const [catF, setCatF]       = useState('');
+  const [showUpload, setShowUpload] = useState(false);
+  const [editing, setEditing] = useState(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await adminApi.getPortfolio();
-      setItems(res.data || []);
-    } catch {
-      toast('Failed to load portfolio', 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
-  useEffect(() => { load(); }, [load]);
-
-  async function save(formData, editId) {
-    try {
-      if (editId) {
-        // PUT only accepts JSON (no re-upload), so send plain object
-        const body = Object.fromEntries(formData.entries());
-        delete body.image; // not accepted in PUT
-        await adminApi.updatePortfolioItem(editId, body);
-        toast('Portfolio item updated');
-      } else {
-        await adminApi.createPortfolioItem(formData);
-        toast('Portfolio item uploaded');
-      }
-      setModal(null);
-      load();
-    } catch (e) {
-      toast(e.message || 'Upload failed', 'error');
-    }
+  async function load() {
+    setLoading(true); setError('');
+    try { const r = await adminApi.getPortfolio(); setItems(r.data || []); }
+    catch (e) { setError(e.message || 'Failed to load portfolio'); }
+    finally { setLoading(false); }
   }
+  useEffect(() => { load(); }, []);
 
   async function del(id) {
-    if (!confirm('Delete this portfolio item? The image will be removed from Cloudinary.')) return;
-    try {
-      await adminApi.deletePortfolioItem(id);
-      toast('Deleted');
-      load();
-    } catch {
-      toast('Delete failed', 'error');
-    }
+    if (!confirm('Delete this image? It will be removed from Cloudinary.')) return;
+    try { await adminApi.deletePortfolioItem(id); load(); }
+    catch (e) { alert(e.message); }
   }
 
+  async function upload(formData) {
+    try { await adminApi.createPortfolioItem(formData); setShowUpload(false); load(); }
+    catch (e) { alert(e.message); }
+  }
+
+  async function update(id, body) {
+    try { await adminApi.updatePortfolioItem(id, body); setEditing(null); load(); }
+    catch (e) { alert(e.message); }
+  }
+
+  const visible = catF ? items.filter(x => x.category === catF) : items;
+  const sel = { padding: '8px 12px', border: '1.5px solid #d1d5db', borderRadius: 4, fontSize: 13, fontFamily: 'Inter, sans-serif', background: '#fff' };
+
   return (
-    <div>
-      <PageHeader title="Portfolio" count={items.length}>
-        <button onClick={() => setModal('add')} style={btnGold}>+ Upload Image</button>
-      </PageHeader>
+    <div style={{ fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 600, color: '#111827', margin: 0 }}>
+          Portfolio <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 18 }}>({items.length})</span>
+        </h1>
+        <button onClick={() => setShowUpload(true)} style={btn(GOLD, G)}>+ Upload Image</button>
+      </div>
+
+      {/* Category filter */}
+      <div style={{ marginBottom: 20 }}>
+        <select value={catF} onChange={e => setCatF(e.target.value)} style={sel}>
+          <option value="">All Categories</option>
+          {CATS.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+        </select>
+      </div>
+
+      {error && <div style={{ background: '#fee2e2', color: '#991b1b', padding: '12px 16px', borderRadius: 6, marginBottom: 16, fontSize: 14 }}>{error}</div>}
 
       {loading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={{ aspectRatio: '4/3', background: '#e8e5df', borderRadius: 8, animation: 'pulse 1.4s ease infinite', animationDelay: `${i * 0.1}s` }} />
-          ))}
-          <style>{`@keyframes pulse{0%,100%{opacity:.45}50%{opacity:.85}}`}</style>
+          {[...Array(6)].map((_, i) => <div key={i} style={{ aspectRatio: '4/3', background: '#e8e5df', borderRadius: 8, opacity: 0.6 }} />)}
         </div>
-      ) : items.length === 0 ? (
-        <EmptyState message="No portfolio items yet." onAction={() => setModal('add')} actionLabel="Upload First Image" />
+      ) : visible.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '64px 20px', background: '#fff', border: '1px solid #e8e5df', borderRadius: 8 }}>
+          <p style={{ color: '#9ca3af', fontSize: 15, margin: '0 0 16px' }}>{catF ? `No ${catF} images yet.` : 'No portfolio items yet.'}</p>
+          <button onClick={() => setShowUpload(true)} style={btn(GOLD, G)}>Upload First Image</button>
+        </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
-          {items.map(item => (
-            <div
-              key={item.id}
-              style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: '1px solid #e8e5df', background: '#f9fafb' }}
-            >
-              <img
-                src={item.image_url}
-                alt={item.title || ''}
-                style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }}
-                loading="lazy"
-              />
+          {visible.map(item => (
+            <div key={item.id} style={{ background: '#fff', border: '1px solid #e8e5df', borderRadius: 8, overflow: 'hidden' }}>
+              <img src={item.image_url} alt={item.title} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }} loading="lazy" />
               <div style={{ padding: '10px 12px' }}>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 600, color: '#111827', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Inter, sans-serif' }}>
                   {item.title || '(untitled)'}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Badge label={item.category || 'other'} />
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => setModal(item)} style={{ ...btnEdit, padding: '4px 10px', fontSize: 11 }}>Edit</button>
-                    <button onClick={() => del(item.id)} style={{ ...btnDanger, padding: '4px 10px', fontSize: 11 }}>Del</button>
+                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: '#f3f4f6', color: '#374151', fontWeight: 600, textTransform: 'capitalize', fontFamily: 'Inter, sans-serif' }}>
+                    {item.category}
+                  </span>
+                  <div style={{ display: 'flex', gap: 5 }}>
+                    <button onClick={() => setEditing(item)} style={btn(G, '#fff', { padding: '4px 10px', fontSize: 11 })}>Edit</button>
+                    <button onClick={() => del(item.id)} style={btn('#fee2e2', '#991b1b', { padding: '4px 10px', fontSize: 11 })}>Del</button>
                   </div>
                 </div>
               </div>
@@ -103,72 +94,97 @@ export default function Portfolio() {
         </div>
       )}
 
-      {modal && (
-        <PortfolioModal
-          item={modal === 'add' ? null : modal}
-          onSave={save}
-          onClose={() => setModal(null)}
-        />
-      )}
+      {showUpload && <UploadModal onUpload={upload} onClose={() => setShowUpload(false)} />}
+      {editing && <EditModal item={editing} onSave={update} onClose={() => setEditing(null)} />}
     </div>
   );
 }
 
-function PortfolioModal({ item, onSave, onClose }) {
-  const [title, setTitle] = useState(item?.title || '');
-  const [description, setDescription] = useState(item?.description || '');
-  const [category, setCategory] = useState(item?.category || 'events');
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(item?.image_url || null);
+function UploadModal({ onUpload, onClose }) {
+  const [file, setFile]     = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [title, setTitle]   = useState('');
+  const [cat, setCat]       = useState('events');
+  const [saving, setSaving] = useState(false);
+  const inp = { width: '100%', padding: '9px 12px', border: '1.5px solid #d1d5db', borderRadius: 4, fontSize: 13, fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' };
 
-  function handleFile(e) {
+  function pickFile(e) {
     const f = e.target.files[0];
     if (!f) return;
     setFile(f);
     setPreview(URL.createObjectURL(f));
   }
 
-  function submit() {
-    if (!item && !file) return;
+  async function submit() {
+    if (!file || !title) return alert('Image and title required');
+    setSaving(true);
     const fd = new FormData();
+    fd.append('image', file);
     fd.append('title', title);
-    fd.append('description', description);
-    fd.append('category', category);
-    if (file) fd.append('image', file);
-    onSave(fd, item?.id || null);
+    fd.append('category', cat);
+    await onUpload(fd);
+    setSaving(false);
   }
 
   return (
-    <Modal title={item ? 'Edit Portfolio Item' : 'Upload Portfolio Image'} onClose={onClose}>
-      {preview && (
-        <img src={preview} alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 6, marginBottom: 16 }} />
-      )}
-      {!item && (
-        <FormField label="Image *">
-          <input type="file" accept="image/*" onChange={handleFile} style={{ fontSize: 13, fontFamily: 'Inter, sans-serif' }} />
-        </FormField>
-      )}
-      <FormField label="Title">
-        <input value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} placeholder="e.g. Ngozi & Emeka Wedding" />
-      </FormField>
-      <FormField label="Category">
-        <select value={category} onChange={e => setCategory(e.target.value)} style={{ ...selectStyle, width: '100%' }}>
-          {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
-        </select>
-      </FormField>
-      <FormField label="Description">
-        <textarea
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          rows={2}
-          style={{ ...inputStyle, resize: 'vertical', fontFamily: 'Inter, sans-serif' }}
-          placeholder="Brief description…"
-        />
-      </FormField>
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-        <button onClick={onClose} style={btnGhost}>Cancel</button>
-        <button onClick={submit} style={btnPrimary}>{item ? 'Update' : 'Upload'}</button>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: '#fff', borderRadius: 10, width: '100%', maxWidth: 480 }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid #e8e5df', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 18, fontWeight: 600, margin: 0, color: '#111827' }}>Upload Image</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 24, lineHeight: 1 }}>✕</button>
+        </div>
+        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {preview && <img src={preview} alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 6 }} />}
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', fontFamily: 'Inter, sans-serif', marginBottom: 5 }}>Image File *</label>
+            <input type="file" accept="image/*" onChange={pickFile} style={{ fontSize: 13, fontFamily: 'Inter, sans-serif' }} />
+          </div>
+          <div><label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', fontFamily: 'Inter, sans-serif', marginBottom: 5 }}>Title *</label>
+            <input value={title} onChange={e => setTitle(e.target.value)} style={inp} placeholder="e.g. Ngozi & Emeka Wedding" /></div>
+          <div><label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', fontFamily: 'Inter, sans-serif', marginBottom: 5 }}>Category</label>
+            <select value={cat} onChange={e => setCat(e.target.value)} style={{ ...inp }}>
+              {['events', 'confectioneries', 'designs', 'other'].map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+            </select></div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button onClick={onClose} style={{ padding: '8px 16px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 4, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Cancel</button>
+            <button onClick={submit} disabled={saving} style={{ padding: '8px 16px', background: G, color: '#fff', border: 'none', borderRadius: 4, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+              {saving ? 'Uploading…' : 'Upload'}
+            </button>
+          </div>
+        </div>
       </div>
-    </Modal>
+    </div>
+  );
+}
+
+function EditModal({ item, onSave, onClose }) {
+  const [title, setTitle] = useState(item.title || '');
+  const [cat, setCat]     = useState(item.category || 'events');
+  const inp = { width: '100%', padding: '9px 12px', border: '1.5px solid #d1d5db', borderRadius: 4, fontSize: 13, fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: '#fff', borderRadius: 10, width: '100%', maxWidth: 400 }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid #e8e5df', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 18, fontWeight: 600, margin: 0, color: '#111827' }}>Edit Item</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 24, lineHeight: 1 }}>✕</button>
+        </div>
+        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <img src={item.image_url} alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 6 }} />
+          <div><label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', fontFamily: 'Inter, sans-serif', marginBottom: 5 }}>Title</label>
+            <input value={title} onChange={e => setTitle(e.target.value)} style={inp} /></div>
+          <div><label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', fontFamily: 'Inter, sans-serif', marginBottom: 5 }}>Category</label>
+            <select value={cat} onChange={e => setCat(e.target.value)} style={inp}>
+              {['events', 'confectioneries', 'designs', 'other'].map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+            </select></div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button onClick={onClose} style={{ padding: '8px 16px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 4, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Cancel</button>
+            <button onClick={() => onSave(item.id, { title, category: cat })} style={{ padding: '8px 16px', background: G, color: '#fff', border: 'none', borderRadius: 4, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
