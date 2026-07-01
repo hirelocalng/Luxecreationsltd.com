@@ -97,26 +97,21 @@ function DivisionGallery() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      fetch(`${API_URL}/api/division-media?division=events&published=true`).then(r => r.json()).catch(() => ({ data: [] })),
-      fetch(`${API_URL}/api/portfolio?category=events`).then(r => r.json()).catch(() => ({ data: [] })),
-    ]).then(([mediaRes, portfolioRes]) => {
-      console.log('[Events Gallery] division-media:', mediaRes);
-      console.log('[Events Gallery] portfolio:', portfolioRes);
-      const mediaItems = (mediaRes.data || []).map(m => ({
-        id: `m-${m.id}`, title: m.title || '', type: m.media_type,
-        src: m.media_url, poster: m.thumbnail_url,
-      }));
-      const portfolioItems = (portfolioRes.data || []).map(p => ({
-        id: `p-${p.id}`, title: p.title || '', type: 'image',
-        src: p.image_url, poster: null,
-      }));
-      setItems([...mediaItems, ...portfolioItems]);
-      setLoading(false);
-    }).catch(err => {
-      console.error('[Events Gallery] fetch error:', err);
-      setLoading(false);
-    });
+    fetch(`${API_URL}/api/division-media?division=events&published=true`)
+      .then(r => r.json())
+      .then(res => {
+        console.log('[Events Gallery] raw response:', res);
+        console.log('[Events Gallery] item count:', res.data?.length ?? 'res.data missing — check res.error');
+        setItems((res.data || []).map(m => ({
+          id: `m-${m.id}`, title: m.title || '', type: m.media_type,
+          src: m.media_url, poster: m.thumbnail_url,
+        })));
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('[Events Gallery] fetch error:', err);
+        setLoading(false);
+      });
   }, []);
 
   return (
