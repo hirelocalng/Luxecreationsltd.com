@@ -37,7 +37,7 @@ export default function HomePage() {
         <LuxeConfectioneries />
         <LuxeDesigns />
         <RibbonDivider />
-        <Portfolio />
+        <Portfolio preview />
         <RibbonDivider flip />
         <Testimonials />
         <FAQ />

@@ -7,7 +7,7 @@ const NAV_LINKS = [
   { label: 'Events',          href: '/events',          isRoute: true  },
   { label: 'Confectioneries', href: '/confectioneries', isRoute: true  },
   { label: 'Designs',         href: '/designs',         isRoute: true  },
-  { label: 'Portfolio',       href: '/#portfolio',      isRoute: false },
+  { label: 'Portfolio',       href: '/portfolio',        isRoute: true  },
   { label: 'Testimonials',    href: '/#testimonials',   isRoute: false },
   { label: 'FAQ',             href: '/#faq',            isRoute: false },
   { label: 'Contact',         href: '/#contact',        isRoute: false },

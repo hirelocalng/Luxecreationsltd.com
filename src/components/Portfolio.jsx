@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { useFetch } from '../hooks/useFetch';
 import { api } from '../lib/api';
@@ -206,7 +207,7 @@ function SkeletonCard() {
   );
 }
 
-export default function Portfolio() {
+export default function Portfolio({ preview = false }) {
   const [active, setActive] = useState('All');
   const ref     = useScrollReveal();
   const gridRef = useRef(null);
@@ -223,6 +224,9 @@ export default function Portfolio() {
     active === 'All'
       ? normalizedItems
       : normalizedItems.filter(i => i._displayCategory === active);
+
+  // In preview mode show at most 6 items, no filter pills
+  const displayed = preview ? filtered.slice(0, 6) : filtered;
 
   useEffect(() => {
     const grid = gridRef.current;
@@ -289,36 +293,38 @@ export default function Portfolio() {
               Stories We've Helped Tell
             </h2>
 
-            <div
-              role="tablist"
-              aria-label="Filter portfolio by category"
-              className="reveal reveal-delay-2"
-              style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}
-            >
-              {FILTERS.map((f) => (
-                <button
-                  key={f}
-                  role="tab"
-                  aria-selected={active === f}
-                  onClick={() => setActive(f)}
-                  style={{
-                    padding: '9px 22px',
-                    borderRadius: 40,
-                    border: `1.5px solid ${active === f ? '#D9A521' : 'rgba(11,43,34,0.2)'}`,
-                    background: active === f ? '#D9A521' : 'transparent',
-                    color: active === f ? '#0B2B22' : 'rgba(11,43,34,0.65)',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    letterSpacing: '0.05em',
-                    cursor: 'pointer',
-                    transition: 'all 0.25s ease',
-                  }}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
+            {!preview && (
+              <div
+                role="tablist"
+                aria-label="Filter portfolio by category"
+                className="reveal reveal-delay-2"
+                style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}
+              >
+                {FILTERS.map((f) => (
+                  <button
+                    key={f}
+                    role="tab"
+                    aria-selected={active === f}
+                    onClick={() => setActive(f)}
+                    style={{
+                      padding: '9px 22px',
+                      borderRadius: 40,
+                      border: `1.5px solid ${active === f ? '#D9A521' : 'rgba(11,43,34,0.2)'}`,
+                      background: active === f ? '#D9A521' : 'transparent',
+                      color: active === f ? '#0B2B22' : 'rgba(11,43,34,0.65)',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      letterSpacing: '0.05em',
+                      cursor: 'pointer',
+                      transition: 'all 0.25s ease',
+                    }}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div
@@ -331,7 +337,7 @@ export default function Portfolio() {
           >
             {loading
               ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
-              : filtered.map((item, i) => (
+              : displayed.map((item, i) => (
                   <PortfolioCard key={item.id ?? item.title} item={item} index={i} />
                 ))}
           </div>
@@ -348,6 +354,39 @@ export default function Portfolio() {
             >
               No portfolio items in this category yet.
             </p>
+          )}
+
+          {/* View Full Portfolio CTA — shown only in preview mode */}
+          {preview && !loading && (
+            <div style={{ textAlign: 'center', marginTop: 52 }}>
+              <Link
+                to="/portfolio"
+                style={{
+                  display: 'inline-block',
+                  background: '#D9A521',
+                  color: '#0B2B22',
+                  padding: '16px 48px',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  textDecoration: 'none',
+                  borderRadius: 3,
+                  transition: 'background 0.25s ease, transform 0.25s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#f0c84a';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#D9A521';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                View Full Portfolio →
+              </Link>
+            </div>
           )}
         </div>
       </section>
