@@ -5,22 +5,36 @@ import { api } from '../lib/api';
 
 const FILTERS = ['All', 'Events', 'Confectioneries', 'Branding & Design'];
 
-// Accent colour per category
-const ACCENT = {
-  Events: '#D9A521',
-  Confectioneries: '#C97B5E',
-  'Branding & Design': '#D9A521',
+// Normalize lowercase API category → display label
+const CAT_MAP = {
+  events:           'Events',
+  confectioneries:  'Confectioneries',
+  designs:          'Branding & Design',
+  'branding & design': 'Branding & Design',
+  other:            'Events', // fallback grouping
 };
 
-// Gradient fallback per category (shown when no image_url is set)
+function normalizeCategory(cat) {
+  if (!cat) return 'Events';
+  return CAT_MAP[cat.toLowerCase()] ?? cat;
+}
+
+// Accent colour per display category
+const ACCENT = {
+  'Events':           '#D9A521',
+  'Confectioneries':  '#C97B5E',
+  'Branding & Design':'#D9A521',
+};
+
+// Gradient fallback shown when no image_url is set
 const GRADIENTS = {
-  Events: [
+  'Events': [
     'linear-gradient(135deg, #1a4033 0%, #2d6a4f 100%)',
     'linear-gradient(135deg, #1c2d1a 0%, #2e5c28 100%)',
     'linear-gradient(135deg, #2d2a1a 0%, #6b5c22 100%)',
     'linear-gradient(135deg, #0e2a2a 0%, #1a5050 100%)',
   ],
-  Confectioneries: [
+  'Confectioneries': [
     'linear-gradient(135deg, #3d1c0d 0%, #7a3d22 100%)',
     'linear-gradient(135deg, #2d1a1a 0%, #6b3535 100%)',
     'linear-gradient(135deg, #2a1a2d 0%, #5c226b 100%)',
@@ -34,31 +48,32 @@ const GRADIENTS = {
   ],
 };
 
-function gradientFor(category, index) {
-  const pool = GRADIENTS[category] ?? GRADIENTS['Events'];
+function gradientFor(displayCategory, index) {
+  const pool = GRADIENTS[displayCategory] ?? GRADIENTS['Events'];
   return pool[index % pool.length];
 }
 
-// Hardcoded fallback shown while API loads or when backend is unreachable
+// Fallback shown while API loads or when backend is unreachable
 const FALLBACK_ITEMS = [
-  { id: 'f1', title: 'Royal Garden Wedding Reception',      category: 'Events' },
-  { id: 'f2', title: 'Artisan Five-Tier Wedding Cake',      category: 'Confectioneries' },
-  { id: 'f3', title: 'Zenith Capital — Brand Identity',     category: 'Branding & Design' },
-  { id: 'f4', title: 'Corporate Gala — 300 Guests',         category: 'Events' },
-  { id: 'f5', title: 'Rose Gold Birthday Celebration Cake', category: 'Confectioneries' },
-  { id: 'f6', title: 'Lumina Boutique — Visual Identity',   category: 'Branding & Design' },
-  { id: 'f7', title: 'Luxury Baby Shower — Ivory & Gold',   category: 'Events' },
-  { id: 'f8', title: 'Dessert Table — 80-Piece Collection', category: 'Confectioneries' },
-  { id: 'f9', title: 'Nkemjika Foods — Packaging Design',   category: 'Branding & Design' },
-  { id:'f10', title: 'Product Launch — 500 Attendees',      category: 'Events' },
-  { id:'f11', title: 'Bridal Shower Cake & Cupcakes',       category: 'Confectioneries' },
-  { id:'f12', title: 'Solace Wellness — Brand System',      category: 'Branding & Design' },
+  { id: 'f1',  title: 'Royal Garden Wedding Reception',      category: 'Events' },
+  { id: 'f2',  title: 'Artisan Five-Tier Wedding Cake',      category: 'Confectioneries' },
+  { id: 'f3',  title: 'Zenith Capital — Brand Identity',     category: 'Branding & Design' },
+  { id: 'f4',  title: 'Corporate Gala — 300 Guests',         category: 'Events' },
+  { id: 'f5',  title: 'Rose Gold Birthday Celebration Cake', category: 'Confectioneries' },
+  { id: 'f6',  title: 'Lumina Boutique — Visual Identity',   category: 'Branding & Design' },
+  { id: 'f7',  title: 'Luxury Baby Shower — Ivory & Gold',   category: 'Events' },
+  { id: 'f8',  title: 'Dessert Table — 80-Piece Collection', category: 'Confectioneries' },
+  { id: 'f9',  title: 'Nkemjika Foods — Packaging Design',   category: 'Branding & Design' },
+  { id: 'f10', title: 'Product Launch — 500 Attendees',      category: 'Events' },
+  { id: 'f11', title: 'Bridal Shower Cake & Cupcakes',       category: 'Confectioneries' },
+  { id: 'f12', title: 'Solace Wellness — Brand System',      category: 'Branding & Design' },
 ];
 
 function PortfolioCard({ item, index }) {
-  const accent    = ACCENT[item.category] ?? '#D9A521';
-  const gradient  = gradientFor(item.category, index);
-  const hasImage  = Boolean(item.image_url);
+  const displayCat = normalizeCategory(item.category);
+  const accent     = ACCENT[displayCat] ?? '#D9A521';
+  const gradient   = gradientFor(displayCat, index);
+  const hasImage   = Boolean(item.image_url);
 
   return (
     <div
@@ -68,11 +83,12 @@ function PortfolioCard({ item, index }) {
         borderRadius: 4,
         overflow: 'hidden',
         aspectRatio: '4/3',
+        minHeight: 280,
         background: hasImage ? '#0B2B22' : gradient,
         cursor: 'pointer',
       }}
     >
-      {/* Real image */}
+      {/* Uploaded image */}
       {hasImage && (
         <img
           src={item.image_url}
@@ -84,12 +100,13 @@ function PortfolioCard({ item, index }) {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
+            objectPosition: 'center',
             display: 'block',
           }}
         />
       )}
 
-      {/* Dot pattern (gradient-only cards) */}
+      {/* Dot pattern (placeholder-only cards) */}
       {!hasImage && (
         <div
           aria-hidden="true"
@@ -112,7 +129,7 @@ function PortfolioCard({ item, index }) {
           flexDirection: 'column',
           justifyContent: 'flex-end',
           padding: 22,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 55%)',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)',
         }}
       >
         <span
@@ -126,7 +143,7 @@ function PortfolioCard({ item, index }) {
             marginBottom: 5,
           }}
         >
-          {item.category}
+          {displayCat}
         </span>
         <span
           style={{
@@ -173,7 +190,6 @@ function PortfolioCard({ item, index }) {
   );
 }
 
-// Skeleton card shown while loading
 function SkeletonCard() {
   return (
     <div
@@ -182,6 +198,7 @@ function SkeletonCard() {
         borderRadius: 4,
         overflow: 'hidden',
         aspectRatio: '4/3',
+        minHeight: 280,
         background: 'linear-gradient(135deg, rgba(11,43,34,0.08) 0%, rgba(11,43,34,0.18) 100%)',
         animation: 'skeletonPulse 1.4s ease-in-out infinite',
       }}
@@ -196,10 +213,17 @@ export default function Portfolio() {
 
   const { items, loading } = useFetch(api.getPortfolio, FALLBACK_ITEMS);
 
-  const filtered =
-    active === 'All' ? items : items.filter((i) => i.category === active);
+  // Normalize categories on incoming API items so filter/display works correctly
+  const normalizedItems = items.map(item => ({
+    ...item,
+    _displayCategory: normalizeCategory(item.category),
+  }));
 
-  // Animate cards in whenever the visible set changes
+  const filtered =
+    active === 'All'
+      ? normalizedItems
+      : normalizedItems.filter(i => i._displayCategory === active);
+
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid || loading) return;
@@ -222,7 +246,6 @@ export default function Portfolio() {
 
   return (
     <>
-      {/* Skeleton pulse keyframe — injected once */}
       <style>{`
         @keyframes skeletonPulse {
           0%, 100% { opacity: 0.5; }
@@ -237,7 +260,6 @@ export default function Portfolio() {
         style={{ background: '#F7F3E8', padding: '96px 24px' }}
       >
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <p
               className="reveal"
@@ -267,7 +289,6 @@ export default function Portfolio() {
               Stories We've Helped Tell
             </h2>
 
-            {/* Filter pills */}
             <div
               role="tablist"
               aria-label="Filter portfolio by category"
@@ -300,7 +321,6 @@ export default function Portfolio() {
             </div>
           </div>
 
-          {/* Grid */}
           <div
             ref={gridRef}
             style={{
@@ -316,7 +336,6 @@ export default function Portfolio() {
                 ))}
           </div>
 
-          {/* Empty state — shown only when API returned data but filter has no matches */}
           {!loading && filtered.length === 0 && (
             <p
               style={{

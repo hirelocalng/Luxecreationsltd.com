@@ -27,8 +27,8 @@ router.get('/', async (req, res) => {
   const { category } = req.query;
   const { rows } = await pool.query(
     category
-      ? 'SELECT * FROM portfolio_items WHERE published = TRUE AND category = $1 ORDER BY sort_order ASC, id DESC'
-      : 'SELECT * FROM portfolio_items WHERE published = TRUE ORDER BY sort_order ASC, id DESC',
+      ? 'SELECT * FROM portfolio_items WHERE category = $1 ORDER BY sort_order ASC, id DESC'
+      : 'SELECT * FROM portfolio_items ORDER BY sort_order ASC, id DESC',
     category ? [category] : []
   );
   res.json({ data: rows });
@@ -43,7 +43,7 @@ router.get('/admin', requireAuth, async (req, res) => {
 // POST /api/portfolio — admin upload
 router.post('/', requireAuth, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Image file required' });
-  const { title, category, sort_order = 0, published = true } = req.body;
+  const { title, category, sort_order = 0 } = req.body;
   if (!title || !category) return res.status(400).json({ error: 'title and category required' });
 
   // Upload to Cloudinary
@@ -57,8 +57,8 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
 
   const { rows } = await pool.query(
     `INSERT INTO portfolio_items (title, category, image_url, cloudinary_id, sort_order, published)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-    [title, category, result.secure_url, result.public_id, sort_order, published === 'true']
+     VALUES ($1, $2, $3, $4, $5, TRUE) RETURNING *`,
+    [title, category, result.secure_url, result.public_id, sort_order]
   );
   res.status(201).json(rows[0]);
 });
