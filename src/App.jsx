@@ -5,6 +5,8 @@ import ConfectioneriesPage from './pages/ConfectioneriesPage';
 import DesignsPage from './pages/DesignsPage';
 import PortfolioPage from './pages/PortfolioPage';
 import PortfolioItem from './pages/PortfolioItem';
+import BlogPage from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 import BookPage from './pages/BookPage';
 import AdminRoot from './admin/AdminRoot';
 
@@ -18,6 +20,8 @@ export default function App() {
         <Route path="/designs" element={<DesignsPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/portfolio/:id" element={<PortfolioItem />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/book" element={<BookPage />} />
         <Route path="/admin/*" element={<AdminRoot />} />
       </Routes>

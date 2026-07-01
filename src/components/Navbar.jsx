@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { label: 'Confectioneries', href: '/confectioneries', isRoute: true  },
   { label: 'Designs',         href: '/designs',         isRoute: true  },
   { label: 'Portfolio',       href: '/portfolio',        isRoute: true  },
+  { label: 'Blog',            href: '/blog',            isRoute: true  },
   { label: 'Testimonials',    href: '/#testimonials',   isRoute: false },
   { label: 'FAQ',             href: '/#faq',            isRoute: false },
   { label: 'Contact',         href: '/#contact',        isRoute: false },
