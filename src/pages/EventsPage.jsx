@@ -96,6 +96,8 @@ function DivisionGallery() {
   const ref = useScrollReveal();
   const { items, loading } = useFetch(() => api.getPortfolio('events'), []);
 
+  if (!loading) console.log('[EventsPage] portfolio response:', items);
+
   return (
     <section ref={ref} style={{ background: '#0B2B22', padding: '96px 24px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>

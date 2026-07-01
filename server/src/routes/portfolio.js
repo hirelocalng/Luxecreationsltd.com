@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
   const { category } = req.query;
   const { rows } = await pool.query(
     category
-      ? 'SELECT * FROM portfolio_items WHERE category = $1 ORDER BY sort_order ASC, id DESC'
+      ? 'SELECT * FROM portfolio_items WHERE LOWER(category) = LOWER($1) ORDER BY sort_order ASC, id DESC'
       : 'SELECT * FROM portfolio_items ORDER BY sort_order ASC, id DESC',
     category ? [category] : []
   );
