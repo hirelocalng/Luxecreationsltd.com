@@ -35,61 +35,6 @@ export default function LuxeConfectioneries() {
           gap: 64,
           alignItems: 'center',
         }}>
-          {/* Service list first on this section */}
-          <div className="reveal">
-            <h3 style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              color: 'rgba(11,43,34,0.45)',
-              margin: '0 0 24px',
-            }}>
-              Our Confectioneries
-            </h3>
-            {loading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} style={{
-                    height: 48,
-                    borderBottom: '1px solid rgba(11,43,34,0.08)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 14,
-                  }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(201,123,94,0.25)', flexShrink: 0 }} />
-                    <div style={{ height: 12, width: `${55 + (i % 3) * 15}%`, background: 'rgba(11,43,34,0.07)', borderRadius: 3 }} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {services.map((s) => (
-                  <li key={s} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 14,
-                    padding: '14px 0',
-                    borderBottom: '1px solid rgba(11,43,34,0.08)',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 15,
-                    color: 'rgba(11,43,34,0.78)',
-                  }}>
-                    <span aria-hidden="true" style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      background: '#C97B5E',
-                      flexShrink: 0,
-                    }} />
-                    {s}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
           <div>
             <p className="reveal" style={{
               fontFamily: 'var(--font-body)',
@@ -136,7 +81,60 @@ export default function LuxeConfectioneries() {
               or a curated dessert table for fifty guests, Luxe Confectioneries
               delivers beauty and flavour in equal measure.
             </p>
-            <div className="reveal reveal-delay-4" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            <div className="reveal">
+              <h3 style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                color: 'rgba(11,43,34,0.45)',
+                margin: '0 0 24px',
+              }}>
+                Our Confectioneries
+              </h3>
+              {loading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} style={{
+                      height: 48,
+                      borderBottom: '1px solid rgba(11,43,34,0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 14,
+                    }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(201,123,94,0.25)', flexShrink: 0 }} />
+                      <div style={{ height: 12, width: `${55 + (i % 3) * 15}%`, background: 'rgba(11,43,34,0.07)', borderRadius: 3 }} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {services.map((s) => (
+                    <li key={s} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 14,
+                      padding: '14px 0',
+                      borderBottom: '1px solid rgba(11,43,34,0.08)',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 15,
+                      color: 'rgba(11,43,34,0.78)',
+                    }}>
+                      <span aria-hidden="true" style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        background: '#C97B5E',
+                        flexShrink: 0,
+                      }} />
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="reveal reveal-delay-4" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 40 }}>
               <Link
                 to="/book"
                 style={{
