@@ -2,15 +2,15 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const NAV = [
-  { to: 'dashboard',    label: 'Dashboard',     icon: '⬡' },
-  { to: 'inquiries',   label: 'Inquiries',     icon: '✉' },
-  { to: 'testimonials',label: 'Testimonials',  icon: '★' },
-  { to: 'portfolio',   label: 'Portfolio',     icon: '⊞' },
-  { to: 'blog',        label: 'Blog',          icon: '✎' },
-  { to: 'services',    label: 'Services',      icon: '◉' },
-  { to: 'seo',         label: 'SEO',           icon: '⊛' },
-  { to: 'newsletter',  label: 'Newsletter',    icon: '◎' },
-  { to: 'settings',    label: 'Settings',      icon: '⚙' },
+  { to: '/admin/dashboard',    label: 'Dashboard',    icon: '⬡' },
+  { to: '/admin/inquiries',    label: 'Inquiries',    icon: '✉' },
+  { to: '/admin/testimonials', label: 'Testimonials', icon: '★' },
+  { to: '/admin/portfolio',    label: 'Portfolio',    icon: '⊞' },
+  { to: '/admin/blog',         label: 'Blog',         icon: '✎' },
+  { to: '/admin/services',     label: 'Services',     icon: '◉' },
+  { to: '/admin/seo',          label: 'SEO',          icon: '⊛' },
+  { to: '/admin/newsletter',   label: 'Newsletter',   icon: '◎' },
+  { to: '/admin/settings',     label: 'Settings',     icon: '⚙' },
 ];
 
 const FOREST = '#0B2B22';

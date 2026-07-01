@@ -30,7 +30,7 @@ function AdminRoutes() {
           </Guard>
         }
       >
-        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard"    element={<Dashboard />} />
         <Route path="inquiries"    element={<Inquiries />} />
         <Route path="testimonials" element={<Testimonials />} />
