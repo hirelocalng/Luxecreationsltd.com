@@ -1,6 +1,6 @@
-// Empty string = same-origin relative paths (works on Railway where API and frontend share a domain).
-// Set VITE_API_URL only when the API is on a different domain.
-const BASE = import.meta.env.VITE_API_URL || '';
+import { API_URL } from '../../utils/api';
+
+const BASE = API_URL;
 
 function getToken() {
   return localStorage.getItem('admin_token');
@@ -14,7 +14,10 @@ async function req(path, options = {}) {
   if (tok) headers['Authorization'] = `Bearer ${tok}`;
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw Object.assign(new Error(data.error || 'Request failed'), { status: res.status, data });
+  if (!res.ok) {
+    console.error(`Admin API error [${res.status}] ${path}:`, data);
+    throw Object.assign(new Error(data.error || 'Request failed'), { status: res.status, data });
+  }
   return data;
 }
 

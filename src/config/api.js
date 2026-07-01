@@ -1,1 +1,2 @@
-export const API_URL = import.meta.env.VITE_API_URL || '';
+// Re-exports from central utils so existing imports keep working
+export { API_URL } from '../utils/api';

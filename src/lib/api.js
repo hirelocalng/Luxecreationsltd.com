@@ -1,4 +1,4 @@
-import { API_URL } from '../config/api';
+import { API_URL } from '../utils/api';
 
 const BASE = API_URL;
 
@@ -8,7 +8,10 @@ async function request(path, options = {}) {
     ...options,
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw Object.assign(new Error(data.error || 'Request failed'), { status: res.status, data });
+  if (!res.ok) {
+    console.error(`API error [${res.status}] ${path}:`, data);
+    throw Object.assign(new Error(data.error || 'Request failed'), { status: res.status, data });
+  }
   return data;
 }
 

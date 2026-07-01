@@ -12,43 +12,31 @@ const app = express();
 const DIST = path.join(__dirname, '../../dist');
 app.use(express.static(DIST));
 
-// ── 2. Security & Logging ─────────────────────────────────────────────────────
+// ── 2. Security headers (CSP disabled — React SPA uses inline scripts) ────────
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc:     ["'self'"],
-        scriptSrc:      ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-        scriptSrcElem:  ["'self'", "'unsafe-inline'"],
-        styleSrc:       ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-        fontSrc:        ["'self'", 'https://fonts.gstatic.com'],
-        imgSrc:         ["'self'", 'data:', 'https://res.cloudinary.com'],
-        connectSrc:     ["'self'", 'https://luxecreationsltd.com', 'https://luxecreationsltdcom-production.up.railway.app'],
-      },
-    },
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    referrerPolicy: false,
   })
 );
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // ── 3. CORS ───────────────────────────────────────────────────────────────────
-const allowedOrigins = [
-  'https://luxecreationsltd.com',
-  'https://www.luxecreationsltd.com',
-  'https://luxecreationsltdcom-production.up.railway.app',
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:3000',
-  ...(process.env.FRONTEND_URL || '').split(',').filter(Boolean).map((s) => s.trim()),
-];
-
 app.use(
   cors({
-    origin(origin, cb) {
-      // Allow same-origin requests (origin undefined) and listed origins
-      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-      cb(new Error(`CORS blocked: ${origin}`));
-    },
+    origin: [
+      'https://luxecreationsltd.com',
+      'https://www.luxecreationsltd.com',
+      'https://luxecreationsltdcom-production.up.railway.app',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3000',
+      'http://localhost:3001',
+    ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -69,14 +57,14 @@ app.use(
 );
 
 // ── 6. API routes ─────────────────────────────────────────────────────────────
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/inquiries', require('./routes/inquiries'));
-app.use('/api/blog', require('./routes/blog'));
-app.use('/api/testimonials', require('./routes/testimonials'));
-app.use('/api/services', require('./routes/services'));
-app.use('/api/portfolio', require('./routes/portfolio'));
-app.use('/api/newsletter', require('./routes/newsletter'));
-app.use('/api/seo', require('./routes/seo'));
+app.use('/api/auth',        require('./routes/auth'));
+app.use('/api/inquiries',   require('./routes/inquiries'));
+app.use('/api/blog',        require('./routes/blog'));
+app.use('/api/testimonials',require('./routes/testimonials'));
+app.use('/api/services',    require('./routes/services'));
+app.use('/api/portfolio',   require('./routes/portfolio'));
+app.use('/api/newsletter',  require('./routes/newsletter'));
+app.use('/api/seo',         require('./routes/seo'));
 
 // ── 7. Health check ───────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
@@ -92,9 +80,6 @@ app.get('*splat', (req, res) => {
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error(err);
-  if (err.message && err.message.startsWith('CORS blocked')) {
-    return res.status(403).json({ error: err.message });
-  }
   if (err.code === '23505') {
     return res.status(409).json({ error: 'A record with that value already exists.' });
   }
