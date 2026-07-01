@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom';
 
+const BG_IMAGE = 'url("https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1920&q=80")';
+const OVERLAY   = 'linear-gradient(rgba(11,43,34,0.75), rgba(11,43,34,0.75))';
+
 export default function Hero() {
   return (
     <section
@@ -12,32 +15,15 @@ export default function Hero() {
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
+        backgroundImage: `${OVERLAY}, ${BG_IMAGE}`,
+        backgroundSize: 'cover',
+        WebkitBackgroundSize: 'cover',
+        MozBackgroundSize: 'cover',
+        backgroundPosition: 'center center',
+        backgroundAttachment: 'scroll',
+        backgroundRepeat: 'no-repeat',
       }}
     >
-      {/* Background image */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage:
-            'url("https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1920&q=80")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }}
-      />
-
-      {/* Deep forest green overlay — 65% opacity so brand colour dominates */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'rgba(11,43,34,0.75)',
-        }}
-      />
-
       {/* Subtle dot texture */}
       <div
         aria-hidden="true"
