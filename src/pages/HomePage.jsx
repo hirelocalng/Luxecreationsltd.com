@@ -24,7 +24,7 @@ export default function HomePage() {
         <Hero />
         <WhyChooseUs />
         <ServiceCards />
-        <TestimonialsCarousel />
+        <Portfolio preview />
         <Process />
         <HomeCTA />
         <RibbonDivider />
@@ -34,7 +34,7 @@ export default function HomePage() {
         <LuxeConfectioneries />
         <LuxeDesigns />
         <RibbonDivider />
-        <Portfolio preview />
+        <TestimonialsCarousel />
         <RibbonDivider flip />
         <FAQ />
         <Contact />
