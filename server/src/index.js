@@ -64,7 +64,8 @@ app.use('/api/testimonials',require('./routes/testimonials'));
 app.use('/api/services',    require('./routes/services'));
 app.use('/api/portfolio',   require('./routes/portfolio'));
 app.use('/api/newsletter',  require('./routes/newsletter'));
-app.use('/api/seo',         require('./routes/seo'));
+app.use('/api/seo',          require('./routes/seo'));
+app.use('/api/division-media', require('./routes/divisionMedia'));
 
 // ── 7. Health check ───────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {

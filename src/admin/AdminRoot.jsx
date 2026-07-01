@@ -8,6 +8,7 @@ import Inquiries from './pages/Inquiries';
 import Testimonials from './pages/Testimonials';
 import Services from './pages/Services';
 import Portfolio from './pages/Portfolio';
+import DivisionMediaPage from './pages/DivisionMediaPage';
 import Blog from './pages/Blog';
 import BlogEditor from './pages/BlogEditor';
 import Seo from './pages/Seo';
@@ -35,8 +36,11 @@ function AdminRoutes() {
         <Route path="inquiries"    element={<Inquiries />} />
         <Route path="testimonials" element={<Testimonials />} />
         <Route path="services"     element={<Services />} />
-        <Route path="portfolio"    element={<Portfolio />} />
-        <Route path="blog"         element={<Blog />} />
+        <Route path="portfolio"              element={<Portfolio />} />
+        <Route path="events-media"         element={<DivisionMediaPage division="events" />} />
+        <Route path="confectioneries-media" element={<DivisionMediaPage division="confectioneries" />} />
+        <Route path="designs-media"        element={<DivisionMediaPage division="designs" />} />
+        <Route path="blog"                 element={<Blog />} />
         <Route path="blog/new"     element={<BlogEditor />} />
         <Route path="blog/:id/edit" element={<BlogEditor />} />
         <Route path="seo"          element={<Seo />} />

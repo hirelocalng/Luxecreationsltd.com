@@ -57,4 +57,9 @@ export const adminApi = {
   updateSeo: (page, body) => req(`/api/seo/${page}`, { method: 'PUT', body: JSON.stringify(body) }),
 
   getSubscribers: (status) => req(`/api/newsletter/subscribers${status ? `?status=${status}` : ''}`),
+
+  getDivisionMedia: (division) => req(`/api/division-media/admin?division=${encodeURIComponent(division)}`),
+  createDivisionMedia: (formData) => req('/api/division-media', { method: 'POST', body: formData }),
+  updateDivisionMedia: (id, body) => req(`/api/division-media/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  deleteDivisionMedia: (id) => req(`/api/division-media/${id}`, { method: 'DELETE' }),
 };

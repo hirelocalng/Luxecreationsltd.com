@@ -1,9 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { useFetch } from '../hooks/useFetch';
-import { api } from '../lib/api';
 import { API_URL } from '../utils/api';
 
 const SERVICES = [
@@ -95,12 +93,25 @@ function ProcessSection() {
 
 function DivisionGallery() {
   const ref = useScrollReveal();
-  const { items, loading } = useFetch(() => api.getPortfolio('events'), []);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/portfolio`)
-      .then(r => r.json())
-      .then(data => { console.log('[EventsPage] ALL PORTFOLIO ITEMS:', JSON.stringify(data)); });
+    Promise.all([
+      fetch(`${API_URL}/api/division-media?division=events&published=true`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`${API_URL}/api/portfolio?category=events`).then(r => r.json()).catch(() => ({ data: [] })),
+    ]).then(([mediaRes, portfolioRes]) => {
+      const mediaItems = (mediaRes.data || []).map(m => ({
+        id: `m-${m.id}`, title: m.title || '', type: m.media_type,
+        src: m.media_url, poster: m.thumbnail_url,
+      }));
+      const portfolioItems = (portfolioRes.data || []).map(p => ({
+        id: `p-${p.id}`, title: p.title || '', type: 'image',
+        src: p.image_url, poster: null,
+      }));
+      setItems([...mediaItems, ...portfolioItems]);
+      setLoading(false);
+    });
   }, []);
 
   return (
@@ -150,12 +161,24 @@ function DivisionGallery() {
                 borderRadius: 4, overflow: 'hidden',
                 background: '#0a2218',
               }}>
-                {item.image_url && (
+                {item.type === 'video' ? (
+                  <video
+                    muted
+                    controls
+                    playsInline
+                    poster={item.poster}
+                    src={item.src}
+                    style={{
+                      position: 'absolute', inset: 0,
+                      width: '100%', height: '100%',
+                      objectFit: 'cover', display: 'block',
+                    }}
+                  />
+                ) : item.src && (
                   <img
-                    src={item.image_url}
+                    src={item.src}
                     alt={item.title}
                     loading="lazy"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; console.warn('[EventsPage] img load failed:', item.image_url); }}
                     style={{
                       position: 'absolute', inset: 0,
                       width: '100%', height: '100%',
@@ -164,19 +187,21 @@ function DivisionGallery() {
                     }}
                   />
                 )}
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-                  padding: 20,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)',
-                }}>
-                  <p style={{
-                    fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600,
-                    color: '#F7F3E8', margin: 0, lineHeight: 1.3,
+                {item.type !== 'video' && (
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                    padding: 20,
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)',
                   }}>
-                    {item.title}
-                  </p>
-                </div>
+                    <p style={{
+                      fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600,
+                      color: '#F7F3E8', margin: 0, lineHeight: 1.3,
+                    }}>
+                      {item.title}
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
