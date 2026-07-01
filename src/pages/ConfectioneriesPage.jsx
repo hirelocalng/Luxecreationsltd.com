@@ -82,8 +82,8 @@ function DivisionGallery() {
           </p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
-            {items.map((item, i) => (
-              <div key={item.id} className={`reveal reveal-delay-${(i % 3) + 1}`} style={{
+            {items.map((item) => (
+              <div key={item.id} style={{
                 position: 'relative',
                 aspectRatio: '3/4', minHeight: 280,
                 borderRadius: 4, overflow: 'hidden',
