@@ -21,6 +21,7 @@ export const api = {
   getServices: (division) => request(division ? `/api/services?division=${encodeURIComponent(division)}` : '/api/services'),
   getTestimonials: () => request('/api/testimonials'),
   getPortfolio: (category) => request(category ? `/api/portfolio?category=${encodeURIComponent(category)}` : '/api/portfolio'),
+  getPortfolioItem: (id) => request(`/api/portfolio/${id}`),
   getBlogPosts: (page = 1) => request(`/api/blog?page=${page}`),
   getBlogPost: (slug) => request(`/api/blog/${slug}`),
   getSeo: (page) => request(`/api/seo/${page}`),

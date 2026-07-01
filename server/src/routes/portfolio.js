@@ -40,6 +40,13 @@ router.get('/admin', requireAuth, async (req, res) => {
   res.json({ data: rows });
 });
 
+// GET /api/portfolio/:id — single item
+router.get('/:id', async (req, res) => {
+  const { rows } = await pool.query('SELECT * FROM portfolio_items WHERE id = $1', [req.params.id]);
+  if (!rows.length) return res.status(404).json({ error: 'Not found' });
+  res.json({ data: rows[0] });
+});
+
 // POST /api/portfolio — admin upload
 router.post('/', requireAuth, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Image file required' });
