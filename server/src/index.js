@@ -13,7 +13,21 @@ const DIST = path.join(__dirname, '../../dist');
 app.use(express.static(DIST));
 
 // ── 2. Security & Logging ─────────────────────────────────────────────────────
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc:     ["'self'"],
+        scriptSrc:      ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        scriptSrcElem:  ["'self'", "'unsafe-inline'"],
+        styleSrc:       ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc:        ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc:         ["'self'", 'data:', 'https://res.cloudinary.com'],
+        connectSrc:     ["'self'", 'https://luxecreationsltd.com', 'https://luxecreationsltdcom-production.up.railway.app'],
+      },
+    },
+  })
+);
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // ── 3. CORS ───────────────────────────────────────────────────────────────────
