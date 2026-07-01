@@ -18,6 +18,7 @@ async function request(path, options = {}) {
 export const api = {
   submitInquiry: (body) => request('/api/inquiries', { method: 'POST', body: JSON.stringify(body) }),
   subscribeNewsletter: (body) => request('/api/newsletter/subscribe', { method: 'POST', body: JSON.stringify(body) }),
+  getServices: (division) => request(division ? `/api/services?division=${encodeURIComponent(division)}` : '/api/services'),
   getTestimonials: () => request('/api/testimonials'),
   getPortfolio: (category) => request(category ? `/api/portfolio?category=${encodeURIComponent(category)}` : '/api/portfolio'),
   getBlogPosts: (page = 1) => request(`/api/blog?page=${page}`),

@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { useFetch } from '../hooks/useFetch';
+import { api } from '../lib/api';
 
-const SERVICES = [
+const FALLBACK_SERVICES = [
   'Custom Celebration & Wedding Cakes',
   'Tiered & Multi-Tier Cakes',
   'Cupcakes & Mini Cakes',
@@ -16,6 +18,8 @@ const SERVICES = [
 
 export default function LuxeConfectioneries() {
   const ref = useScrollReveal();
+  const { items, loading } = useFetch(() => api.getServices('confectioneries'), FALLBACK_SERVICES.map(t => ({ title: t })));
+  const services = items.map(s => (typeof s === 'string' ? s : s.title));
 
   return (
     <section
@@ -44,29 +48,46 @@ export default function LuxeConfectioneries() {
             }}>
               Our Confectioneries
             </h3>
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {SERVICES.map((s) => (
-                <li key={s} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 14,
-                  padding: '14px 0',
-                  borderBottom: '1px solid rgba(11,43,34,0.08)',
-                  fontFamily: 'var(--font-body)',
-                  fontSize: 15,
-                  color: 'rgba(11,43,34,0.78)',
-                }}>
-                  <span aria-hidden="true" style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: '50%',
-                    background: '#C97B5E',
-                    flexShrink: 0,
-                  }} />
-                  {s}
-                </li>
-              ))}
-            </ul>
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} style={{
+                    height: 48,
+                    borderBottom: '1px solid rgba(11,43,34,0.08)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14,
+                  }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(201,123,94,0.25)', flexShrink: 0 }} />
+                    <div style={{ height: 12, width: `${55 + (i % 3) * 15}%`, background: 'rgba(11,43,34,0.07)', borderRadius: 3 }} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {services.map((s) => (
+                  <li key={s} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14,
+                    padding: '14px 0',
+                    borderBottom: '1px solid rgba(11,43,34,0.08)',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 15,
+                    color: 'rgba(11,43,34,0.78)',
+                  }}>
+                    <span aria-hidden="true" style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: '#C97B5E',
+                      flexShrink: 0,
+                    }} />
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div>

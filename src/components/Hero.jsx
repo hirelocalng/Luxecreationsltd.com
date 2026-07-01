@@ -21,7 +21,7 @@ export default function Hero() {
           position: 'absolute',
           inset: 0,
           backgroundImage:
-            'url("https://images.unsplash.com/photo-1519167758481-83f29c888e64?auto=format&fit=crop&w=1920&q=80")',
+            'url("https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1920&q=80")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
@@ -34,7 +34,7 @@ export default function Hero() {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'rgba(11,43,34,0.65)',
+          background: 'rgba(11,43,34,0.75)',
         }}
       />
 

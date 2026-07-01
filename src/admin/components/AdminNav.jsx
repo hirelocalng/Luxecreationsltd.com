@@ -18,13 +18,14 @@ const GOLD = '#D9A521';
 const DIM = 'rgba(247,243,232,0.6)';
 const ACTIVE_BG = 'rgba(217,165,33,0.1)';
 
-export default function AdminNav({ collapsed }) {
+export default function AdminNav({ collapsed, onClose }) {
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
 
   return (
     <aside style={{
-      width: collapsed ? 56 : 220,
+      width: collapsed ? 56 : 260,
+      height: '100%',
       minHeight: '100vh',
       background: FOREST,
       display: 'flex',
@@ -60,6 +61,7 @@ export default function AdminNav({ collapsed }) {
           <NavLink
             key={to}
             to={to}
+            onClick={onClose}
             style={({ isActive }) => ({
               display: 'flex',
               alignItems: 'center',
