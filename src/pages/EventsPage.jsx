@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { useFetch } from '../hooks/useFetch';
 import { api } from '../lib/api';
+import { API_URL } from '../utils/api';
 
 const SERVICES = [
   'Luxury Wedding Planning & Full Design',
@@ -96,7 +97,11 @@ function DivisionGallery() {
   const ref = useScrollReveal();
   const { items, loading } = useFetch(() => api.getPortfolio('events'), []);
 
-  if (!loading) console.log('[EventsPage] portfolio response:', items);
+  useEffect(() => {
+    fetch(`${API_URL}/api/portfolio`)
+      .then(r => r.json())
+      .then(data => { console.log('[EventsPage] ALL PORTFOLIO ITEMS:', JSON.stringify(data)); });
+  }, []);
 
   return (
     <section ref={ref} style={{ background: '#0B2B22', padding: '96px 24px' }}>
@@ -150,6 +155,7 @@ function DivisionGallery() {
                     src={item.image_url}
                     alt={item.title}
                     loading="lazy"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; console.warn('[EventsPage] img load failed:', item.image_url); }}
                     style={{
                       position: 'absolute', inset: 0,
                       width: '100%', height: '100%',
