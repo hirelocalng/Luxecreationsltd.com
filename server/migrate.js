@@ -76,6 +76,20 @@ CREATE TABLE IF NOT EXISTS portfolio_items (
   created_at    TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Division media (images + videos per division)
+CREATE TABLE IF NOT EXISTS division_media (
+  id             SERIAL PRIMARY KEY,
+  division       TEXT NOT NULL,
+  title          TEXT,
+  media_url      TEXT NOT NULL,
+  thumbnail_url  TEXT,
+  cloudinary_id  TEXT,
+  media_type     TEXT NOT NULL DEFAULT 'image',
+  sort_order     INTEGER DEFAULT 0,
+  published      BOOLEAN DEFAULT TRUE,
+  created_at     TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Blog posts
 CREATE TABLE IF NOT EXISTS posts (
   id               SERIAL PRIMARY KEY,

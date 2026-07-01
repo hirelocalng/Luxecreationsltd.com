@@ -119,6 +119,8 @@ function DivisionGallery() {
       fetch(`${API_URL}/api/division-media?division=designs&published=true`).then(r => r.json()).catch(() => ({ data: [] })),
       fetch(`${API_URL}/api/portfolio?category=designs`).then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([mediaRes, portfolioRes]) => {
+      console.log('[Designs Gallery] division-media:', mediaRes);
+      console.log('[Designs Gallery] portfolio:', portfolioRes);
       const mediaItems = (mediaRes.data || []).map(m => ({
         id: `m-${m.id}`, title: m.title || '', type: m.media_type,
         src: m.media_url, poster: m.thumbnail_url,
@@ -128,6 +130,9 @@ function DivisionGallery() {
         src: p.image_url, poster: null,
       }));
       setItems([...mediaItems, ...portfolioItems]);
+      setLoading(false);
+    }).catch(err => {
+      console.error('[Designs Gallery] fetch error:', err);
       setLoading(false);
     });
   }, []);

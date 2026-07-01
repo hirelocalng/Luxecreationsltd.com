@@ -101,6 +101,8 @@ function DivisionGallery() {
       fetch(`${API_URL}/api/division-media?division=events&published=true`).then(r => r.json()).catch(() => ({ data: [] })),
       fetch(`${API_URL}/api/portfolio?category=events`).then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([mediaRes, portfolioRes]) => {
+      console.log('[Events Gallery] division-media:', mediaRes);
+      console.log('[Events Gallery] portfolio:', portfolioRes);
       const mediaItems = (mediaRes.data || []).map(m => ({
         id: `m-${m.id}`, title: m.title || '', type: m.media_type,
         src: m.media_url, poster: m.thumbnail_url,
@@ -110,6 +112,9 @@ function DivisionGallery() {
         src: p.image_url, poster: null,
       }));
       setItems([...mediaItems, ...portfolioItems]);
+      setLoading(false);
+    }).catch(err => {
+      console.error('[Events Gallery] fetch error:', err);
       setLoading(false);
     });
   }, []);

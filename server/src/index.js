@@ -90,7 +90,33 @@ app.use((err, req, res, next) => {
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-const PORT = Number(process.env.PORT) || 3001;
-app.listen(PORT, () => {
-  console.log(`✅ Luxe Creations API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
-});
+const pool = require('./db/pool');
+
+async function start() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS division_media (
+        id             SERIAL PRIMARY KEY,
+        division       TEXT NOT NULL,
+        title          TEXT,
+        media_url      TEXT NOT NULL,
+        thumbnail_url  TEXT,
+        cloudinary_id  TEXT,
+        media_type     TEXT NOT NULL DEFAULT 'image',
+        sort_order     INTEGER DEFAULT 0,
+        published      BOOLEAN DEFAULT TRUE,
+        created_at     TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    console.log('✅ division_media table ready');
+  } catch (err) {
+    console.error('⚠️  division_media table init failed:', err.message);
+  }
+
+  const PORT = Number(process.env.PORT) || 3001;
+  app.listen(PORT, () => {
+    console.log(`✅ Luxe Creations API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+  });
+}
+
+start();
