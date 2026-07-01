@@ -3,41 +3,15 @@ import { useScrollReveal } from '../hooks/useScrollReveal';
 import { useFetch } from '../hooks/useFetch';
 import { api } from '../lib/api';
 
-const FALLBACK_TESTIMONIALS = [
-  {
-    id: 'f1',
-    quote:
-      "Luxe Creations transformed my wedding into an absolute fairytale. Every detail was exquisite — from the décor to the cake. I didn't have to worry about a thing. They handled everything with such grace and professionalism. I still get compliments on my wedding today!",
-    name: 'Adaeze Okafor',
-    role: 'Bride',
-  },
-  {
-    id: 'f2',
-    quote:
-      "Our product launch was a massive success, and Luxe Creations deserves full credit. The branding they created was striking and memorable, and the event execution was flawless. Our guests were genuinely impressed. We'll be partnering with them for all future events.",
-    name: 'Chukwuemeka Eze',
-    role: 'CEO, Eze Group',
-  },
-  {
-    id: 'f3',
-    quote:
-      "The custom cake Luxe Confectioneries made for my 40th birthday was a masterpiece — it looked almost too beautiful to cut! The flavour was incredible too. Everyone at the party was talking about it. Luxe Creations is truly in a league of their own.",
-    name: 'Ngozi Anyanwu',
-    role: 'Birthday Celebrant',
-  },
-];
-
 export default function TestimonialsCarousel() {
   const [active, setActive] = useState(0);
   const ref = useScrollReveal();
-  const { items, loading } = useFetch(api.getTestimonials, FALLBACK_TESTIMONIALS);
 
-  // Reset active index when items change (e.g. API returns more/fewer)
-  useEffect(() => {
-    setActive(0);
-  }, [items]);
+  // No fallback data — show only real published testimonials from the API
+  const { items, loading } = useFetch(api.getTestimonials, []);
 
-  // Auto-advance — pause while loading
+  useEffect(() => { setActive(0); }, [items]);
+
   useEffect(() => {
     if (loading || items.length <= 1) return;
     const timer = setInterval(() => {
@@ -46,7 +20,6 @@ export default function TestimonialsCarousel() {
     return () => clearInterval(timer);
   }, [loading, items.length]);
 
-  // Clamp active in case item count changed
   const safeActive = Math.min(active, Math.max(0, items.length - 1));
 
   return (
@@ -84,13 +57,11 @@ export default function TestimonialsCarousel() {
           What Our Clients Say
         </h2>
 
-        {/* Carousel body */}
         <div
           className="reveal reveal-delay-2"
           style={{ position: 'relative', minHeight: loading ? 200 : undefined }}
         >
           {loading ? (
-            /* Skeleton pulse while fetching */
             <div
               aria-hidden="true"
               style={{
@@ -100,6 +71,17 @@ export default function TestimonialsCarousel() {
                 animation: 'skeletonPulse 1.4s ease-in-out infinite',
               }}
             />
+          ) : items.length === 0 ? (
+            <p style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 16,
+              lineHeight: 1.75,
+              color: 'rgba(247,243,232,0.4)',
+              margin: 0,
+              padding: '40px 0',
+            }}>
+              Client testimonials coming soon.
+            </p>
           ) : (
             items.map((t, i) => (
               <div
@@ -116,7 +98,6 @@ export default function TestimonialsCarousel() {
                   pointerEvents: i === safeActive ? 'auto' : 'none',
                 }}
               >
-                {/* Decorative opening quote */}
                 <div
                   aria-hidden="true"
                   style={{
@@ -147,14 +128,13 @@ export default function TestimonialsCarousel() {
                 </blockquote>
 
                 <cite style={{ fontStyle: 'normal' }}>
-                  <div
-                    style={{ width: 40, height: 1, background: '#D9A521', margin: '0 auto 16px' }}
-                  />
+                  <div style={{ width: 40, height: 1, background: '#D9A521', margin: '0 auto 16px' }} />
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, fontWeight: 600, color: '#D9A521', margin: '0 0 4px' }}>
                     {t.name}
                   </p>
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'rgba(247,243,232,0.55)', margin: 0 }}>
                     {t.role}
+                    {t.division ? ` · ${t.division}` : ''}
                   </p>
                 </cite>
               </div>
@@ -162,7 +142,7 @@ export default function TestimonialsCarousel() {
           )}
         </div>
 
-        {/* Dot indicators — hidden while loading */}
+        {/* Dot indicators */}
         {!loading && items.length > 1 && (
           <div
             role="tablist"

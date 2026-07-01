@@ -11,7 +11,6 @@ import LuxeEvents from '../components/LuxeEvents';
 import LuxeConfectioneries from '../components/LuxeConfectioneries';
 import LuxeDesigns from '../components/LuxeDesigns';
 import Portfolio from '../components/Portfolio';
-import Testimonials from '../components/Testimonials';
 import FAQ from '../components/FAQ';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
@@ -37,7 +36,6 @@ export default function HomePage() {
         <RibbonDivider />
         <Portfolio preview />
         <RibbonDivider flip />
-        <Testimonials />
         <FAQ />
         <Contact />
       </main>
