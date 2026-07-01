@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { useFetch } from '../hooks/useFetch';
+import { api } from '../lib/api';
 
 const SERVICES = [
   'Brand Identity & Logo Design',
@@ -108,9 +110,10 @@ function PackagesSection() {
   );
 }
 
-function PortfolioPlaceholder() {
+function DivisionGallery() {
   const ref = useScrollReveal();
-  const labels = ['Logo & Identity', 'Event Branding', 'Social Media Kit', 'Packaging', 'Marketing Collateral', 'Brand Guide'];
+  const { items, loading } = useFetch(() => api.getPortfolio('designs'), []);
+
   return (
     <section ref={ref} style={{ background: '#0B2B22', padding: '96px 24px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
@@ -128,45 +131,68 @@ function PortfolioPlaceholder() {
             Brands We've Built
           </h2>
         </div>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          gap: 20,
-        }}>
-          {labels.map((label, i) => (
-            <div key={label} className={`reveal reveal-delay-${(i % 3) + 1}`} style={{
-              aspectRatio: '4/3',
-              background: 'rgba(247,243,232,0.04)',
-              border: '1px solid rgba(247,243,232,0.08)',
-              borderRadius: 4,
-              display: 'flex',
-              alignItems: 'flex-end',
-              padding: 20,
-              position: 'relative',
-              overflow: 'hidden',
-            }}>
-              <div aria-hidden="true" style={{
-                position: 'absolute', inset: 0,
-                background: 'linear-gradient(135deg, rgba(217,165,33,0.05) 0%, transparent 60%)',
+
+        {loading ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} aria-hidden="true" style={{
+                aspectRatio: '4/3', minHeight: 240,
+                background: 'rgba(247,243,232,0.06)',
+                borderRadius: 4,
+                animation: 'skeletonPulse 1.4s ease-in-out infinite',
+                animationDelay: `${i * 0.1}s`,
               }} />
-              <p style={{
-                fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 500,
-                letterSpacing: '0.1em', textTransform: 'uppercase',
-                color: 'rgba(217,165,33,0.55)', margin: 0, position: 'relative', zIndex: 1,
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <p style={{
+            textAlign: 'center',
+            fontFamily: 'var(--font-body)', fontSize: 15,
+            color: 'rgba(247,243,232,0.4)', margin: 0,
+          }}>
+            Portfolio images coming soon — follow us on Instagram to see our latest design work.
+          </p>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
+            {items.map((item, i) => (
+              <div key={item.id} className={`reveal reveal-delay-${(i % 3) + 1}`} style={{
+                position: 'relative',
+                aspectRatio: '4/3', minHeight: 240,
+                borderRadius: 4, overflow: 'hidden',
+                background: '#0a2218',
               }}>
-                {label}
-              </p>
-            </div>
-          ))}
-        </div>
-        <p style={{
-          textAlign: 'center', marginTop: 32,
-          fontFamily: 'var(--font-body)', fontSize: 13,
-          color: 'rgba(247,243,232,0.35)',
-        }}>
-          Portfolio images coming soon — follow us on Instagram to see our latest design work.
-        </p>
+                {item.image_url && (
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    loading="lazy"
+                    style={{
+                      position: 'absolute', inset: 0,
+                      width: '100%', height: '100%',
+                      objectFit: 'cover', objectPosition: 'center',
+                      display: 'block',
+                    }}
+                  />
+                )}
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                  padding: 20,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)',
+                }}>
+                  <p style={{
+                    fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600,
+                    color: '#F7F3E8', margin: 0, lineHeight: 1.3,
+                  }}>
+                    {item.title}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+      <style>{`@keyframes skeletonPulse { 0%,100%{opacity:.35} 50%{opacity:.65} }`}</style>
     </section>
   );
 }
@@ -347,7 +373,7 @@ export default function DesignsPage() {
       </section>
 
       <PackagesSection />
-      <PortfolioPlaceholder />
+      <DivisionGallery />
 
       {/* CTA */}
       <section style={{
