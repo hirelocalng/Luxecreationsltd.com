@@ -17,13 +17,20 @@ app.use(helmet());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // ── 3. CORS ───────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5174')
-  .split(',')
-  .map((s) => s.trim());
+const allowedOrigins = [
+  'https://luxecreationsltd.com',
+  'https://www.luxecreationsltd.com',
+  'https://luxecreationsltdcom-production.up.railway.app',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000',
+  ...(process.env.FRONTEND_URL || '').split(',').filter(Boolean).map((s) => s.trim()),
+];
 
 app.use(
   cors({
     origin(origin, cb) {
+      // Allow same-origin requests (origin undefined) and listed origins
       if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
       cb(new Error(`CORS blocked: ${origin}`));
     },
